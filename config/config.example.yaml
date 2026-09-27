@@ -1,0 +1,21 @@
+server:
+  port: 8080
+  mode: debug
+  host: localhost
+
+database:
+  driver: mysql
+  host: localhost
+  port: 3306
+  user: root
+  password: CHANGE_ME
+  dbname: blog_db
+  charset: utf8mb4
+
+jwt:
+  secret: CHANGE_ME
+  expire: 24h
+
+upload:
+  path: ./uploads
+  max_size: 10485760
