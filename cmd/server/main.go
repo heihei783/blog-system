@@ -1,6 +1,7 @@
 package main
 
 import (
+	"blog-system/internal/handler"
 	"blog-system/internal/repository"
 	"blog-system/pkg/config"
 	"fmt"
@@ -36,10 +37,24 @@ func main() {
 }
 
 func setupRoutes(r *gin.Engine, db *gorm.DB) {
-	r.GET("/health", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"status":  "ok",
-			"message": "服务运行正常",
-		})
-	})
+	//初始化任务
+	userRepo := repository.NewUseRepository(db)
+	userService := service.NewUserService(userRepo)
+	userHandler := handler.NewUserHandler(userService)
+
+	//初始化jwt
+	suth.InitJWT(cfg.JWT.Secret)
+
+	//公开路由
+	api := r.Group("api"){
+		api.POST("/users/register",userHandler.Register)
+		api.POST("/users/login",userHandler.Login)
+	}
+
+	//需要认证的路由
+	authGroup := api.Group("")
+	authGroup.Use(auth.AuthMiddleware())
+	{
+		authGroup.GET("/users/profile",userHandler.GetProfile)
+	}
 }
