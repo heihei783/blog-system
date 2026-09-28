@@ -3,10 +3,11 @@ package main
 import (
 	"blog-system/internal/handler"
 	"blog-system/internal/repository"
+	"blog-system/internal/service"
+	"blog-system/pkg/auth"
 	"blog-system/pkg/config"
 	"fmt"
 	"log"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -27,7 +28,7 @@ func main() {
 	gin.SetMode(cfg.Server.Mode)
 
 	r := gin.Default()
-	setupRoutes(r, db)
+	setupRoutes(r, db, cfg)
 
 	addr := fmt.Sprintf("%s:%s", cfg.Server.Host, cfg.Server.Port)
 	fmt.Printf("服务器启动在 http://%s\n", addr)
@@ -36,25 +37,26 @@ func main() {
 	}
 }
 
-func setupRoutes(r *gin.Engine, db *gorm.DB) {
+func setupRoutes(r *gin.Engine, db *gorm.DB, cfg *config.Config) {
 	//初始化任务
-	userRepo := repository.NewUseRepository(db)
+	userRepo := repository.NewUserRepository(db)
 	userService := service.NewUserService(userRepo)
 	userHandler := handler.NewUserHandler(userService)
 
 	//初始化jwt
-	suth.InitJWT(cfg.JWT.Secret)
+	auth.InitJWT(cfg.JWT.Secret)
 
 	//公开路由
-	api := r.Group("api"){
-		api.POST("/users/register",userHandler.Register)
-		api.POST("/users/login",userHandler.Login)
+	api := r.Group("api")
+	{
+		api.POST("/users/register", userHandler.Register)
+		api.POST("/users/login", userHandler.Login)
 	}
 
 	//需要认证的路由
 	authGroup := api.Group("")
 	authGroup.Use(auth.AuthMiddleware())
 	{
-		authGroup.GET("/users/profile",userHandler.GetProfile)
+		authGroup.GET("/users/profile", userHandler.GetProfile)
 	}
 }

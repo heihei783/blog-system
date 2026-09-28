@@ -9,7 +9,7 @@ import (
 // Article 文章模型
 type Article struct {
 	ID           uint       `gorm:"primaryKey" json:"id"`
-	Title        string     `gorm:"not nll;size:200;index" json:"title"`
+	Title        string     `gorm:"not null;size:200;index" json:"title"`
 	Slug         string     `gorm:"uniqueIndex;not null;size:255" json:"slug"`
 	Content      string     `gorm:"type:text" json:"content"`
 	Summary      string     `gorm:"size:500" json:"summary"`
@@ -39,7 +39,7 @@ func (Article) TableName() string { return "articles" }
 func (a *Article) BeforeCreate(tx *gorm.DB) error {
 	//生成slug
 	if a.Slug == "" {
-		a.Slug = generateSlug(a.Title)
+		// a.Slug = generateSlug(a.Title)
 	}
 
 	if a.Status == "published" && a.PublishedAt == nil {

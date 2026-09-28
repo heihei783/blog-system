@@ -25,7 +25,7 @@ func NewUserService(userRepo repository.UserRepository) UserService {
 }
 
 type RegisterRequest struct {
-	Username string `json:"username" binding:"required,min3,max=50"`
+	Username string `json:"username" binding:"required,min=3,max=50"`
 	Email    string `josn:"email" binding:"required,email"`
 	Password string `josn:"password" binding:"required,min=6"`
 	Nickname string `json:"nickname"`
@@ -41,7 +41,7 @@ type UpdateProfileRequest struct {
 	Avatar   string `josn:"avatar"`
 }
 
-func (s *UserServiceImpl) Reginster(req RegisterRequest) (*model.User, error) {
+func (s *UserServiceImpl) Register(req RegisterRequest) (*model.User, error) {
 	//检查用户名是否存在
 	if s.userRepo.ExistsByUsername(req.Username) {
 		return nil, errors.New("用户名已存在")
@@ -99,7 +99,11 @@ func (s *UserServiceImpl) Login(req LoginRequest) (string, error) {
 	return token, nil
 }
 
-func (s *UserServiceImpl) GetProfile(userID uint, req UpdateProfileRequest) (*model.User, error) {
+func (s *UserServiceImpl) GetProfile(userID uint) (*model.User, error) {
+	return s.userRepo.FindByID(userID)
+}
+
+func (s *UserServiceImpl) UpdateProfile(userID uint, req UpdateProfileRequest) error {
 	user, err := s.userRepo.FindByID(userID)
 	if err != nil {
 		return err
@@ -108,7 +112,6 @@ func (s *UserServiceImpl) GetProfile(userID uint, req UpdateProfileRequest) (*mo
 	if req.Nickname != "" {
 		user.Nickname = req.Nickname
 	}
-
 	if req.Avatar != "" {
 		user.Avatar = req.Avatar
 	}
